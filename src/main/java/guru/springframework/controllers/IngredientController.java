@@ -3,6 +3,7 @@ package guru.springframework.controllers;
 import guru.springframework.commands.IngredientCommand;
 import guru.springframework.commands.RecipeCommand;
 import guru.springframework.commands.UnitOfMeasureCommand;
+import guru.springframework.domain.Ingredient;
 import guru.springframework.services.IngredientService;
 import guru.springframework.services.RecipeService;
 import guru.springframework.services.UnitOfMeasureService;
@@ -13,6 +14,9 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import reactor.core.publisher.Mono;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by jt on 6/28/17.
@@ -70,24 +74,22 @@ public class IngredientController {
     @GetMapping("recipe/{recipeId}/ingredient/{id}/update")
     public String updateRecipeIngredient(@PathVariable String recipeId,
                                          @PathVariable String id, Model model){
-        model.addAttribute("ingredient", ingredientService.findByRecipeIdAndIngredientId(recipeId, id).block());
+        model.addAttribute("ingredient", ingredientService.findByRecipeIdAndIngredientId(recipeId, id));
 
         model.addAttribute("uomList", unitOfMeasureService.listAllUoms());
         return "recipe/ingredient/ingredientform";
     }
 
     @PostMapping("recipe/{recipeId}/ingredient")
-    public String saveOrUpdate(@ModelAttribute IngredientCommand command){
-        IngredientCommand savedCommand = ingredientService.saveIngredientCommand(command).block();
+    public String saveOrUpdate(@ModelAttribute("ingredient") Ingredient ingredient) throws ExecutionException, InterruptedException {
+        Mono<Ingredient> savedCommandMono = ingredientService.saveIngredientCommand(ingredient);
 
-        log.debug("saved ingredient id:" + savedCommand.getId());
-
-        return "redirect:/recipe/" + savedCommand.getRecipeId() + "/ingredient/" + savedCommand.getId() + "/show";
+        return "redirect:/recipe/" + ingredient.getRecipeId() + "/ingredient/" + ingredient.getId() + "/show";
     }
 
     @GetMapping("recipe/{recipeId}/ingredient/{id}/delete")
     public String deleteIngredient(@PathVariable String recipeId,
-                                   @PathVariable String id){
+                                   @PathVariable String id) throws ExecutionException, InterruptedException {
 
         log.debug("deleting ingredient id:" + id);
         ingredientService.deleteById(recipeId, id);

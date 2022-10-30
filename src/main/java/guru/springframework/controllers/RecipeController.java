@@ -1,17 +1,14 @@
 package guru.springframework.controllers;
 
 import guru.springframework.commands.RecipeCommand;
-import guru.springframework.exceptions.NotFoundException;
 import guru.springframework.services.RecipeService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-//import org.springframework.web.servlet.ModelAndView;
-
-import javax.validation.Valid;
+import reactor.core.publisher.Mono;
 
 /**
  * Created by jt on 6/19/17.
@@ -19,12 +16,18 @@ import javax.validation.Valid;
 @Slf4j
 @Controller
 public class RecipeController {
-
     private static final String RECIPE_RECIPEFORM_URL = "recipe/recipeform";
     private final RecipeService recipeService;
+    private WebDataBinder webDataBinder;
+
+    private String value;
 
     public RecipeController(RecipeService recipeService) {
         this.recipeService = recipeService;
+    }
+    @InitBinder
+    public void initBinder(WebDataBinder webDataBinder){
+        this.webDataBinder=webDataBinder;
     }
 
     @GetMapping("/recipe/{id}/show")
@@ -44,13 +47,14 @@ public class RecipeController {
 
     @GetMapping("recipe/{id}/update")
     public String updateRecipe(@PathVariable String id, Model model){
-        model.addAttribute("recipe", recipeService.findCommandById(id).block());
+        model.addAttribute("recipe", recipeService.findCommandById(id));
         return RECIPE_RECIPEFORM_URL;
     }
 
     @PostMapping("recipe")
-    public String saveOrUpdate(@Valid @ModelAttribute("recipe") RecipeCommand command, BindingResult bindingResult){
-
+    public String saveOrUpdate(@ModelAttribute("recipe") RecipeCommand command){
+        webDataBinder.validate();
+        BindingResult bindingResult = webDataBinder.getBindingResult();
         if(bindingResult.hasErrors()){
 
             bindingResult.getAllErrors().forEach(objectError -> {
@@ -60,9 +64,11 @@ public class RecipeController {
             return RECIPE_RECIPEFORM_URL;
         }
 
-        RecipeCommand savedCommand = recipeService.saveRecipeCommand(command).block();
+        Mono<RecipeCommand> savedCommandMono = recipeService.saveRecipeCommand(command);
+        Mono<String> idMono = savedCommandMono.map((RecipeCommand::getId));
+        idMono.subscribe(v -> this.value = v);
 
-        return "redirect:/recipe/" + savedCommand.getId() + "/show";
+        return "redirect:/recipe/" + value + "/show";
     }
 
     @GetMapping("recipe/{id}/delete")

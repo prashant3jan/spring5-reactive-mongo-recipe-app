@@ -8,6 +8,7 @@ import guru.springframework.converters.UnitOfMeasureCommandToUnitOfMeasure;
 import guru.springframework.converters.UnitOfMeasureToUnitOfMeasureCommand;
 import guru.springframework.domain.Ingredient;
 import guru.springframework.domain.Recipe;
+import guru.springframework.domain.UnitOfMeasure;
 import guru.springframework.repositories.reactive.RecipeReactiveRepository;
 import guru.springframework.repositories.reactive.UnitOfMeasureReactiveRepository;
 import org.junit.Before;
@@ -76,10 +77,10 @@ public class IngredientServiceImplTest {
         when(recipeReactiveRepository.findById(anyString())).thenReturn(Mono.just(recipe));
 
         //then
-        IngredientCommand ingredientCommand = ingredientService.findByRecipeIdAndIngredientId("1", "3").block();
+        Ingredient ingredient = ingredientService.findByRecipeIdAndIngredientId("1", "3").block();
 
         //when
-        assertEquals("3", ingredientCommand.getId());
+        assertEquals("3", ingredient.getId());
         verify(recipeReactiveRepository, times(1)).findById(anyString());
     }
 
@@ -87,11 +88,11 @@ public class IngredientServiceImplTest {
     @Test
     public void testSaveRecipeCommand() throws Exception {
         //given
-        IngredientCommand command = new IngredientCommand();
-        command.setId("3");
-        command.setRecipeId("2");
-        command.setUom(new UnitOfMeasureCommand());
-        command.getUom().setId("1234");
+        Ingredient ingredient = new Ingredient();
+        ingredient.setId("3");
+        ingredient.setRecipeId("2");
+        ingredient.setUom(new UnitOfMeasure());
+        ingredient.getUom().setId("1234");
 
         Recipe savedRecipe = new Recipe();
         savedRecipe.addIngredient(new Ingredient());
@@ -101,10 +102,10 @@ public class IngredientServiceImplTest {
         when(recipeReactiveRepository.save(any())).thenReturn(Mono.just(savedRecipe));
 
         //when
-        IngredientCommand savedCommand = ingredientService.saveIngredientCommand(command).block();
+        Ingredient ingredientSaved = ingredientService.saveIngredientCommand(ingredient).toFuture().get();
 
         //then
-        assertEquals("3", savedCommand.getId());
+        assertEquals("3", ingredientSaved.getId());
         verify(recipeReactiveRepository, times(1)).findById(anyString());
         verify(recipeReactiveRepository, times(1)).save(any(Recipe.class));
 

@@ -3,6 +3,7 @@ package guru.springframework.controllers;
 import guru.springframework.commands.IngredientCommand;
 import guru.springframework.commands.RecipeCommand;
 import guru.springframework.commands.UnitOfMeasureCommand;
+import guru.springframework.domain.Ingredient;
 import guru.springframework.services.IngredientService;
 import guru.springframework.services.RecipeService;
 import guru.springframework.services.UnitOfMeasureService;
@@ -64,10 +65,10 @@ public class IngredientControllerTest {
     @Test
     public void testShowIngredient() throws Exception {
         //given
-        IngredientCommand ingredientCommand = new IngredientCommand();
+        Ingredient ingredient = new Ingredient();
 
         //when
-        when(ingredientService.findByRecipeIdAndIngredientId(anyString(), anyString())).thenReturn(Mono.just(ingredientCommand));
+        when(ingredientService.findByRecipeIdAndIngredientId(anyString(), anyString())).thenReturn(Mono.just(ingredient));
 
         //then
         mockMvc.perform(get("/recipe/1/ingredient/2/show"))
@@ -100,10 +101,10 @@ public class IngredientControllerTest {
     @Test
     public void testUpdateIngredientForm() throws Exception {
         //given
-        IngredientCommand ingredientCommand = new IngredientCommand();
+        Ingredient ingredient = new Ingredient();
 
         //when
-        when(ingredientService.findByRecipeIdAndIngredientId(anyString(), anyString())).thenReturn(Mono.just(ingredientCommand));
+        when(ingredientService.findByRecipeIdAndIngredientId(anyString(), anyString())).thenReturn(Mono.just(ingredient));
         when(unitOfMeasureService.listAllUoms()).thenReturn(Flux.just(new UnitOfMeasureCommand()));
 
         //then
@@ -117,12 +118,12 @@ public class IngredientControllerTest {
     @Test
     public void testSaveOrUpdate() throws Exception {
         //given
-        IngredientCommand command = new IngredientCommand();
-        command.setId("3");
-        command.setRecipeId("2");
+        Ingredient ingredient = new Ingredient();
+        ingredient.setId("3");
+        ingredient.setRecipeId("2");
 
         //when
-        when(ingredientService.saveIngredientCommand(any())).thenReturn(Mono.just(command));
+        when(ingredientService.saveIngredientCommand(any())).thenReturn(Mono.just(ingredient));
 
         //then
         mockMvc.perform(post("/recipe/2/ingredient")

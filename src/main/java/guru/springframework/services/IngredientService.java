@@ -1,16 +1,17 @@
 package guru.springframework.services;
 
-import guru.springframework.commands.IngredientCommand;
+import guru.springframework.domain.Ingredient;
 import reactor.core.publisher.Mono;
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by jt on 6/27/17.
  */
 public interface IngredientService {
 
-    Mono<IngredientCommand> findByRecipeIdAndIngredientId(String recipeId, String ingredientId);
+    Mono<Ingredient> findByRecipeIdAndIngredientId(String recipeId, String ingredientId);
 
-    Mono<IngredientCommand> saveIngredientCommand(IngredientCommand command);
+    Mono<Ingredient> saveIngredientCommand(Ingredient ingredient) throws ExecutionException, InterruptedException;
 
-    Mono<Void> deleteById(String recipeId, String idToDelete);
+    Mono<Void> deleteById(String recipeId, String idToDelete) throws ExecutionException, InterruptedException;
 }
