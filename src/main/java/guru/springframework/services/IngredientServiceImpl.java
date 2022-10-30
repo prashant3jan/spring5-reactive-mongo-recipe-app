@@ -113,11 +113,13 @@ public class IngredientServiceImpl implements IngredientService {
             //enhance with id value
             //IngredientCommand ingredientCommandSaved = ingredientToIngredientCommand.convert(savedIngredientOptional.get());
             //ingredientCommandSaved.setRecipeId(recipe.getId());
-            Ingredient ingredientFound = ingredientOptional.get();
-            ingredientFound.setRecipeId(recipe.getId());
+            Ingredient ingredientSaved = savedIngredientOptional.get();
+            ingredientSaved.setRecipeId(recipe.getId());
 
 
-            return Mono.just(ingredientFound);
+
+
+            return Mono.just(ingredientSaved);
         }
     }
 
