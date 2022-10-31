@@ -79,12 +79,9 @@ public class IngredientServiceImpl implements IngredientService {
                 //Ingredient ingredient2 = ingredientCommandToIngredient.convert(ingredient);
                 recipe.addIngredient(ingredient);
             }
-            Recipe savedRecipe = null;
-            try {
-                savedRecipe = recipeReactiveRepository.save(recipe).toFuture().get();
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
+
+            Recipe savedRecipe = recipeReactiveRepository.save(recipe).toFuture().get();
+
 
             Optional<Ingredient> savedIngredientOptional = savedRecipe.getIngredients().stream()
                     .filter(recipeIngredients -> recipeIngredients.getId().equals(ingredient.getId()))
