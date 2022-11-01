@@ -9,10 +9,9 @@ import guru.springframework.services.UnitOfMeasureService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.ModelAttribute;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.WebDataBinder;
+import org.springframework.web.bind.annotation.*;
 import reactor.core.publisher.Mono;
 
 import java.util.concurrent.ExecutionException;
@@ -23,15 +22,19 @@ import java.util.concurrent.ExecutionException;
 @Slf4j
 @Controller
 public class IngredientController {
-
     private final IngredientService ingredientService;
     private final RecipeService recipeService;
     private final UnitOfMeasureService unitOfMeasureService;
+    private WebDataBinder webDataBinder;
 
     public IngredientController(IngredientService ingredientService, RecipeService recipeService, UnitOfMeasureService unitOfMeasureService) {
         this.ingredientService = ingredientService;
         this.recipeService = recipeService;
         this.unitOfMeasureService = unitOfMeasureService;
+    }
+    @InitBinder("ingredient")
+    public void initBinder(WebDataBinder webDataBinder){
+        this.webDataBinder=webDataBinder;
     }
 
     @GetMapping("/recipe/{recipeId}/ingredients")
@@ -81,10 +84,23 @@ public class IngredientController {
     }
 
     @PostMapping("recipe/{recipeId}/ingredient")
-    public String saveOrUpdate(@ModelAttribute("ingredient") Ingredient ingredient) throws ExecutionException, InterruptedException {
-        Mono<Ingredient> savedCommandMono = ingredientService.saveIngredientCommand(ingredient);
+    public String saveOrUpdate(@ModelAttribute("ingredient") Ingredient ingredient, Model model) throws ExecutionException, InterruptedException {
+        webDataBinder.validate();
+        BindingResult bindingResult = webDataBinder.getBindingResult();
+        if(bindingResult.hasErrors()){
 
-        return "redirect:/recipe/" + ingredient.getRecipeId() + "/ingredient/" + ingredient.getId() + "/show";
+            bindingResult.getAllErrors().forEach(objectError -> {
+                log.debug(objectError.toString());
+            });
+            model.addAttribute("uomList" + unitOfMeasureService.listAllUoms());
+            return "recipe/ingredient/ingredientform";
+        }
+
+        Ingredient savedIngredient = ingredientService.saveIngredientCommand(ingredient).toFuture().get();
+
+        log.debug("saved ingredient id:" + savedIngredient.getId());
+
+        return "redirect:/recipe/" + savedIngredient.getRecipeId() + "/ingredient/" + savedIngredient.getId() + "/show";
     }
 
     @GetMapping("recipe/{recipeId}/ingredient/{id}/delete")

@@ -19,10 +19,7 @@ import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.*;
 
 public class UnitOfMeasureServiceImplTest {
-
-    UnitOfMeasureToUnitOfMeasureCommand unitOfMeasureToUnitOfMeasureCommand = new UnitOfMeasureToUnitOfMeasureCommand();
-    UnitOfMeasureService service;
-
+   UnitOfMeasureService service;
     @Mock
     UnitOfMeasureReactiveRepository unitOfMeasureReactiveRepository;
 
@@ -30,7 +27,7 @@ public class UnitOfMeasureServiceImplTest {
     public void setUp() throws Exception {
         MockitoAnnotations.initMocks(this);
 
-        service = new UnitOfMeasureServiceImpl(unitOfMeasureReactiveRepository, unitOfMeasureToUnitOfMeasureCommand);
+        service = new UnitOfMeasureServiceImpl(unitOfMeasureReactiveRepository);
     }
 
     @Test
@@ -48,7 +45,7 @@ public class UnitOfMeasureServiceImplTest {
         when(unitOfMeasureReactiveRepository.findAll()).thenReturn(Flux.just(uom1, uom2));
 
         //when
-        List<UnitOfMeasureCommand> commands = service.listAllUoms().collectList().block();
+        List<UnitOfMeasure> commands = service.listAllUoms().collectList().toFuture().get();
 
         //then
         assertEquals(2, commands.size());
