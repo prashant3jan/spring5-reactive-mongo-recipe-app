@@ -12,7 +12,7 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
+import reactor.core.publisher.Flux;
 
 import java.util.concurrent.ExecutionException;
 
@@ -69,8 +69,6 @@ public class IngredientController {
         //init uom
         ingredient.setUom(new UnitOfMeasure());
 
-        model.addAttribute("uomList", unitOfMeasureService.listAllUoms());
-
         return "recipe/ingredient/ingredientform";
     }
 
@@ -79,7 +77,6 @@ public class IngredientController {
                                          @PathVariable String id, Model model){
         model.addAttribute("ingredient", ingredientService.findByRecipeIdAndIngredientId(recipeId, id));
 
-        model.addAttribute("uomList", unitOfMeasureService.listAllUoms());
         return "recipe/ingredient/ingredientform";
     }
 
@@ -92,8 +89,7 @@ public class IngredientController {
             bindingResult.getAllErrors().forEach(objectError -> {
                 log.debug(objectError.toString());
             });
-            model.addAttribute("uomList" + unitOfMeasureService.listAllUoms());
-            return "recipe/ingredient/ingredientform";
+           return "recipe/ingredient/ingredientform";
         }
 
         Ingredient savedIngredient = ingredientService.saveIngredientCommand(ingredient).toFuture().get();
@@ -111,5 +107,9 @@ public class IngredientController {
         ingredientService.deleteById(recipeId, id);
 
         return "redirect:/recipe/" + recipeId + "/ingredients";
+    }
+    @ModelAttribute("uomList")
+    public Flux<UnitOfMeasure> populateUomList(){
+        return unitOfMeasureService.listAllUoms();
     }
 }
