@@ -1,14 +1,18 @@
 package guru.springframework.controllers;
 
 import guru.springframework.commands.RecipeCommand;
+import guru.springframework.exceptions.NotFoundException;
 import guru.springframework.services.RecipeService;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.WebDataBinder;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Mono;
+import org.thymeleaf.exceptions.TemplateInputException;
+
+import java.util.concurrent.ExecutionException;
 
 /**
  * Created by jt on 6/19/17.
@@ -52,7 +56,7 @@ public class RecipeController {
     }
 
     @PostMapping("recipe")
-    public String saveOrUpdate(@ModelAttribute("recipe") RecipeCommand command){
+    public String saveOrUpdate(@ModelAttribute("recipe") RecipeCommand command)  {
         webDataBinder.validate();
         BindingResult bindingResult = webDataBinder.getBindingResult();
         if(bindingResult.hasErrors()){
@@ -64,11 +68,17 @@ public class RecipeController {
             return RECIPE_RECIPEFORM_URL;
         }
 
-        Mono<RecipeCommand> savedCommandMono = recipeService.saveRecipeCommand(command);
-        Mono<String> idMono = savedCommandMono.map((RecipeCommand::getId));
-        idMono.subscribe(v -> this.value = v);
+        RecipeCommand recipeCommand = null;
+        try {
+            recipeCommand = recipeService.saveRecipeCommand(command).toFuture().get();
+        } catch (InterruptedException e) {
+            throw new RuntimeException(e);
+        } catch (ExecutionException e) {
+            throw new RuntimeException(e);
+        }
 
-        return "redirect:/recipe/" + value + "/show";
+
+        return "redirect:/recipe/" + recipeCommand.getId() + "/show";
     }
 
     @GetMapping("recipe/{id}/delete")
@@ -80,19 +90,15 @@ public class RecipeController {
         return "redirect:/";
     }
 
-//    @ResponseStatus(HttpStatus.NOT_FOUND)
-//    @ExceptionHandler(NotFoundException.class)
-//    public ModelAndView handleNotFound(Exception exception){
-//
-//        log.error("Handling not found exception");
-//        log.error(exception.getMessage());
-//
-//        ModelAndView modelAndView = new ModelAndView();
-//
-//        modelAndView.setViewName("404error");
-//        modelAndView.addObject("exception", exception);
-//
-//        return modelAndView;
-//    }
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    @ExceptionHandler({NotFoundException.class, TemplateInputException.class})
+    public String handleNotFound(Exception exception, Model model){
+
+        log.error("Handling not found exception");
+        log.error(exception.getMessage());
+
+        model.addAttribute("exception", exception);
+        return "404Error";
+    }
 
 }
