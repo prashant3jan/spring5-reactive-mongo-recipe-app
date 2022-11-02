@@ -24,8 +24,6 @@ public class RecipeController {
     private final RecipeService recipeService;
     private WebDataBinder webDataBinder;
 
-    private String value;
-
     public RecipeController(RecipeService recipeService) {
         this.recipeService = recipeService;
     }
