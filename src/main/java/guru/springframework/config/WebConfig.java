@@ -15,8 +15,8 @@ import static org.springframework.web.reactive.function.server.RequestPredicates
 public class WebConfig {
 
     @Bean
-    RouterFunction<?> routes(RecipeService recipeService){
-        return RouterFunctions.route(GET("api/recipes"),
+    public RouterFunction<?> routes(RecipeService recipeService){
+        return RouterFunctions.route(GET("/api/recipes"),
                 serverRequest -> ServerResponse
                         .ok()
                         .contentType(MediaType.APPLICATION_JSON)
