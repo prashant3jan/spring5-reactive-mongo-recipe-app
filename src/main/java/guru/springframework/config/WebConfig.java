@@ -1,6 +1,7 @@
 package guru.springframework.config;
 
 import guru.springframework.domain.Recipe;
+import guru.springframework.repositories.reactive.RecipeReactiveRepository;
 import guru.springframework.services.RecipeService;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -14,6 +15,12 @@ import static org.springframework.web.reactive.function.server.RequestPredicates
 @Configuration
 public class WebConfig {
 
+    private RecipeService recipeService;
+
+    public WebConfig(RecipeService recipeService) {
+        this.recipeService=recipeService;
+    }
+
     @Bean
     public RouterFunction<?> routes(RecipeService recipeService){
         return RouterFunctions.route(GET("/api/recipes"),
@@ -22,4 +29,13 @@ public class WebConfig {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(recipeService.getRecipes(), Recipe.class));
     }
+
+//    @Bean
+//    public RouterFunction<?> routes(RecipeReactiveRepository recipeReactiveRepository){
+//        return RouterFunctions.route(GET("/api/recipes"),
+//                serverRequest -> ServerResponse
+//                        .ok()
+//                        .contentType(MediaType.APPLICATION_JSON)
+//                        .body(recipeReactiveRepository.findAll(), Recipe.class));
+//    }
 }
