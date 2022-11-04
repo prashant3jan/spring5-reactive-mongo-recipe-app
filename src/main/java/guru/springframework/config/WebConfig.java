@@ -29,13 +29,4 @@ public class WebConfig {
                         .contentType(MediaType.APPLICATION_JSON)
                         .body(recipeService.getRecipes(), Recipe.class));
     }
-
-//    @Bean
-//    public RouterFunction<?> routes(RecipeReactiveRepository recipeReactiveRepository){
-//        return RouterFunctions.route(GET("/api/recipes"),
-//                serverRequest -> ServerResponse
-//                        .ok()
-//                        .contentType(MediaType.APPLICATION_JSON)
-//                        .body(recipeReactiveRepository.findAll(), Recipe.class));
-//    }
 }

@@ -34,15 +34,6 @@ public class RouterFunctionTest {
 
     @Test
     public void testGetRecipes() throws Exception{
-//        Recipe recipe = new Recipe();
-//        recipe.setId("1");
-//        List<Recipe> list = new ArrayList<>();
-//        list.add(recipe);
-//
-//        Flux<Recipe> recipeFlux = Flux.fromIterable(list);
-//
-//        Flux<Recipe> recipeFlux1 = recipeService.getRecipes();
-
         Mockito.when(recipeService.getRecipes()).thenReturn(Flux.just());
 
         webTestClient.get().uri("/api/recipes")
